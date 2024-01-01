@@ -29,46 +29,30 @@ for line in lines:
 print(f"{minx} <= x <= {maxx} and {miny} <= y <= {maxy}")
 size = max(maxx-minx+1, maxy-miny+1)
 
-def huntaround(pos, dist):
-    for dx in range(-dist,dist+1):
-        absdy = dist-abs(dx)
-        for dy in ([0] if absdy == 0 else [-absdy,absdy]): # To make it manhattan
-            yield (pos[0]+dx,pos[1]+dy)
-
-def pointsaround(pos, dist):
-    for hunt in huntaround(pos, dist):
-        if hunt in points:
-            yield hunt
-
-def nearestpoints(pos, maxdist):
-    for dist in range(0,maxdist+1):
-        atthisdist = list(pointsaround(pos, dist))
-        if atthisdist:
-            return atthisdist
-    return []
-
-# print(nearestpoints((5,0),50))
+def manhattan(a,b):
+    return abs(a[0]-b[0])+abs(a[1]-b[1])
 
 sums = defaultdict(int)
 infinites=set()
-for y in range(miny-1,maxy +2):
-    print(f"{y} in range({miny-1})")
-    for x in range(minx-1,maxx +2):
+resultb = 0
+for y in range(miny-1, maxy+2):
+    for x in range(minx-1, maxx+2):
         pos = (x,y)
-        nearest = nearestpoints(pos, size*2)
-        if len(nearest) == 1:
-            nearestpoint = nearest[0]
-            sums[nearestpoint] += 1
+        dists = [(point, manhattan(pos, point)) for point in points]
+        dists.sort(key=lambda a: a[1])
+        nearest_dist = dists[0][1]
+        secondnearest_dist = dists[1][1]
+        nearest = dists[0][0]
+        if nearest_dist != secondnearest_dist:
+            sums[nearest] += 1
             if x == minx-1 or x == maxx+1 or y == miny-1 or y == maxy+1:
-                infinites.add(nearestpoint)
-        # print((f"{pos}->{nearestpoint}" +"              ")[:16], end="")
+                infinites.add(nearest)
+        sum_dist = sum([dist for point, dist in dists])
+        if sum_dist < 10000:
+            resultb += 1
+    #     print((f"{pos}->{nearest}" +"              ")[:16], end="")
     # print()
-
-print("==== infinites:")
-print(infinites)
-
-print("==== sums:")
-print(sums)
 
 area = max([ area for point, area in sums.items() if point not in infinites])
 print("Result A: (max area) = ", area)
+print("Result B: = ", resultb)
