@@ -7,38 +7,20 @@ text = open(file_path).read()
 #=============================================================
 from collections import defaultdict
 nums = [int(x) for x in text.split(' ')]
-print(nums)
 
-tree = []
 resulta = 0
-work = nums.copy()
-
-def loadnext():
-    global resulta
-    childcount = work.pop(0)
-    metacount  = work.pop(0)
-    for childindex in range(childcount):
-        loadnext()
-    for metaindex in range(metacount):
-        meta = work.pop(0)
-        print(meta)
-        resulta += meta
-
-loadnext()
-
-print(resulta)
-
-work = nums.copy()
 def calc():
-    childcount = work.pop(0)
-    metacount  = work.pop(0)
-    results = []
-    for childindex in range(childcount):
-        results.append(calc())
+    global resulta
     result = 0
-    for metaindex in range(metacount):
-        meta = work.pop(0)
-        result += 0 if meta == 0 else (meta if childcount == 0 else results[meta-1])
+    childcount = nums.pop(0)
+    metacount  = nums.pop(0)
+    results = [calc() for _ in range(childcount)]
+    for _ in range(metacount):
+        meta = nums.pop(0)
+        resulta += meta
+        result += meta if childcount == 0 else (0 if not (0 < meta <= len(results)) else results[meta-1])
     return result
 
-print(calc())
+resultb = calc()
+print("Result A = ", resulta)
+print("Result B = ", resultb)
