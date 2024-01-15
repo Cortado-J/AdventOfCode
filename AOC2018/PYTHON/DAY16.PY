@@ -72,7 +72,7 @@ def onlyelementof(s):
     assert len(s) == 1
     return list(s)[0]
 
-# Now repeatedly identify opcodes with a single possible opname and remove the opname from all the other opcodes
+# Now repeatedly identify opcodes with a single possible opname and remove the opname from all the other opcode's possibilities
 available = set(oplist)
 while available:
     for opcode, setofposs in possibles.items():
@@ -81,9 +81,8 @@ while available:
             if opname in available:
                 # Remove from all other opcodes:
                 for opcoderem, setofpossrem in possibles.items():
-                    if opcoderem != opcode:
+                    if opcoderem != opcode: # The line representing 'other'
                         setofpossrem.discard(opname)
-                        possibles[opcoderem] = setofpossrem
                 available.discard(opname)
     
 regs = [0,0,0,0]
