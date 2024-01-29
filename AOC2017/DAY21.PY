@@ -18,7 +18,6 @@ def rotc(pat):
     for x in range(siz):
         for y in range(siz):
             gather += get(pat, x, siz-y-1)
-            # gather += pat[(x)+(siz+1)*(siz-y-1)]
         if x != siz-1:
             gather += "/"
     return gather
