@@ -72,10 +72,10 @@ for index1 in range(len(P)):
             root = math.sqrt(under_root)
             T1 = (-B + root)/(2 * A)
             T2 = (-B - root)/(2 * A)
-        KeepT1 = T1
-        KeepT2 = T2
-        if KeepT2 == -21.2:
-            k = 4
+        # KeepT1 = T1
+        # KeepT2 = T2
+        # if KeepT2 == -21.2:
+        #     k = 4
         if not T1.is_integer() or T1 < 0:
             #  We're not interested in non-integer or negative solutions
             T1 = None
@@ -124,7 +124,7 @@ for index1 in range(len(P)):
                 # print(collision)
                 collisions.append(collision)
 # We have a list of collisions!
-# But we need to handle them in time order, removing any collisions and particles as we go.
+# But we need to handle them in time order, removing any particles as we go.
 # So start by sorting:
 collisions = sorted(collisions, key=lambda x: x[0])
 number_of_collisions = len(collisions)
@@ -137,11 +137,11 @@ for p in P:
 
 # Now work through the collisions in order:
 index = 0
-while index < len(P):
+while index < len(collisions):
     time_of_collision = collisions[index][0]
     # We need to remove all collisions at that time:
     eliminate = set()
-    while index < len(P) and collisions[index][0] == time_of_collision:        
+    while index < len(collisions) and collisions[index][0] == time_of_collision:        
         P1 = collisions[index][1]
         P2 = collisions[index][2]
         # Check the two points have not been eliminated previously
@@ -150,7 +150,7 @@ while index < len(P):
             eliminate.add(P1)
             eliminate.add(P2)
         index += 1
-    # Now we've processed all at that time so we can eliminate:
+    # Now we've processed all at that time, we can eliminate them:
     working -= eliminate
     # And then loop to get the next collision time...
 
