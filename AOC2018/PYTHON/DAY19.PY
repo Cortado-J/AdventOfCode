@@ -127,7 +127,7 @@ for part in ["A", "B"]:
         R1 = 2*2*19*11 + 22+9 + (30 * (29 + 27*28)) * 14 * 32 # Which is 10551267
         R0 = 0
     print(f"Running part {part}")
-    print("Start with tregs 0 to 5 as: ", R0,R1,R2,R3,R4,R5)
+    print("Start with regs 0 to 5 as: ", R0,R1,R2,R3,R4,R5)
     for f in range(1, R1+1):
         for g in range(1, R1+1):
             R4 = f * g
@@ -135,7 +135,7 @@ for part in ["A", "B"]:
                 R0 += f
     print(R0)
 # Part B is still too slow
-# INspectio of the code brings out the meaning - it is equivalent to calculating:
+# Inspection of the code brings out the meaning - it is equivalent to calculating:
 #  For PART A: The sum of the Factors of 867 which is 1228
 #  For PART B: The sum of the Factors of 10551267 which is 15285504
 # The factors were looked up at: https://www.calculatorsoup.com/calculators/math/factors.php
