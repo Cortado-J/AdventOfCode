@@ -9,6 +9,8 @@ text = open(file_path).read()
 
 lines = text.splitlines()
 
+# all below from ChatGPT o1-mini
+
 import sys
 from typing import List, Tuple
 import itertools
