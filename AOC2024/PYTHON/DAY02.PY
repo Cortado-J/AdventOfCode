@@ -8,6 +8,8 @@ text = open(file_path).read()
 lines = text.split('\n')
 parta, partb = 0, 0
 
+# Return 1 if report is safe
+# Return 0 otherwise
 def safe(s):
     print(levels)
     firstmove = s[1] - s[0]
@@ -15,7 +17,6 @@ def safe(s):
        return 0
     for i in range(len(s)-1):
         move = s[i+1] - s[i]
-        print("compare",s[i+1],s[i],move)
         if firstmove > 0:
             if move < 1 or move > 3:
                return 0
@@ -24,11 +25,13 @@ def safe(s):
                return 0
     return 1
 
+# Return 1 if report is safe or can be made safe but skipping any one of the levels
+# Return 0 otherwise
 def skipsafe(s):
-    if safe(s) == 1:
+    if safe(s) == 1: # If salready safe then no need to skip
         return 1
     for skip in range(len(s)):
-        skipped = s[:skip] + s[skip+1:]
+        skipped = s[:skip] + s[skip+1:] # Skip one of the levels
         if safe(skipped) == 1:
             return 1
     return 0
