@@ -5,6 +5,7 @@ daytext = os.path.basename(__file__)[3:5] # Get the day number as two digits fro
 file_path = os.path.join(script_dir, f"day{daytext}.txt")
 text = open(file_path).read()
 #=============================================================
+nums = [int(x) for x in text.split(" ")]
 
 memo = {}
 
@@ -32,8 +33,7 @@ def pluto(n, turns):
 
 def calc(xs, t):
     return sum(pluto(x, t) for x in xs)
-
-nums = [2, 54, 992917, 5270417, 2514, 28561, 0, 990]
+print(nums)
 
 parta = calc(nums, 25)
 print("Part A:", parta)
