@@ -30,13 +30,13 @@ def pluto(n, turns):
     memo[(n,turns)] = r
     return r
 
+def calc(xs, t):
+    return sum(pluto(x, t) for x in xs)
+
 nums = [2, 54, 992917, 5270417, 2514, 28561, 0, 990]
-turns = 75
 
-# nums = [125, 17]
-# turns = 6
-
-parta = sum(pluto(x, turns) for x in nums)
-partb = 0
+parta = calc(nums, 25)
 print("Part A:", parta)
+
+partb = calc(nums, 75)
 print("Part B:", partb)
