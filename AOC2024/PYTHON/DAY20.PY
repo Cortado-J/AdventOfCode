@@ -5,8 +5,6 @@ daytext = os.path.basename(__file__)[3:5] # Get the day number as two digits fro
 file_path = os.path.join(script_dir, f"day{daytext}.txt")
 text = open(file_path).read()
 #=============================================================
-from collections import Counter
-
 lines = text.split('\n')
 grid = {}
 ylen = len(lines)
@@ -34,9 +32,6 @@ def show():
             print(char,end="")
         print()
     print()
-
-# show()
-# print(start,end)
 
 dirs = {0:(1,0),1:(0,1),2:(-1,0),3:(0,-1)}
 dirhor = {(1,0),(-1,0)}
@@ -85,7 +80,6 @@ while pos != end:
     disttoend[nextpos] = pathcount - distsofar - 1
     lastpos = pos
     pos = nextpos
-# print(f"pathcount={pathcount}")
 
 def taxicab(a,b):
     return abs(a[0]-b[0]) + abs(a[1]-b[1])
