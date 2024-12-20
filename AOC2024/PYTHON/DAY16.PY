@@ -5,165 +5,121 @@ daytext = os.path.basename(__file__)[3:5] # Get the day number as two digits fro
 file_path = os.path.join(script_dir, f"day{daytext}.txt")
 text = open(file_path).read()
 #=============================================================
-import time
-start_time = time.time()
+import heapq
 
 lines = text.split('\n')
 grid = {}
-ylen = len(lines)
 start, end = None, None
 for y, line in enumerate(lines):
     for x, char in enumerate(line):
-        pos = (x,y)
+        pos = (x, y)
         grid[pos] = char
         if char == "S":
             start = pos
         elif char == "E":
             end = pos
-    xlen = len(line)
 
-def show():
-    for y in range(ylen):
-        for x in range(xlen):
-            char = grid[x,y]
-            print(char,end="")
-        print()
-    print()
+# Directions: 0=North, 1=East, 2=South, 3=West
+directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]  # (dx, dy) for N,E,S,W
+start_dir = 1  # Start facing East
 
-show()
-print(start,end)
+dist = {}
+for d in range(4):
+    dist[(start[0], start[1], d)] = float('inf')
+dist[(start[0], start[1], start_dir)] = 0
 
-dirs = {0:(1,0),1:(0,1),2:(-1,0),3:(0,-1)}
-dirhor = {(1,0),(-1,0)}
-dirver = {(0,1),(0,-1)}
-big = 10 ** 10
+pq = []
+heapq.heappush(pq, (0, start[0], start[1], start_dir))
 
-# Calculate the location if you moved from pos in dir
-def posdir(pos,dir):
-    return (pos[0]+dir[0],pos[1]+dir[1])
+min_cost = None
+end_states = []  # Will hold all (x, y, d) states at the end tile that achieve minimal cost
 
-def get(pos):
-    return grid[pos] if pos in grid else "#"
+while pq:
+    cost, x, y, d = heapq.heappop(pq)
+    if dist[(x, y, d)] < cost:
+        continue
 
-def compare(a, b):
-    return (a > b) - (a < b)
+    # If we've already found a minimal cost path to end and this cost is greater, we can stop
+    if min_cost is not None and cost > min_cost:
+        break
 
-# Get the direction of b from a as one of the four directions as (x,y)
-# Assumes that the two are either horizontal or vertical (diagonals cause an error!)
-def getdir(a, b):
-    xd, yd = bx-ax, by-ay
-    if xd == 0:
-        assert yd != 0
-        return (0, compare(by, ay))
-    if yd == 0:
-        assert xd != 0
-        return (compare(bx, ax),0)
+    if (x, y) == end:
+        # If we haven't found a min_cost yet, this is our minimal cost
+        if min_cost is None:
+            min_cost = cost
+            end_states = [(x, y, d)]
+        elif cost == min_cost:
+            # Another end state with the same minimal cost
+            end_states.append((x, y, d))
+        # If cost > min_cost won't happen here due to the if-check above.
+        # Do not break here; continue to find all same-cost end states.
+        continue
 
-def ispath(pos):
-    return get(pos) in {".","S","E"}
+    # Move forward
+    nx = x + directions[d][0]
+    ny = y + directions[d][1]
+    if (nx, ny) in grid and grid[(nx, ny)] != '#':
+        forward_cost = cost + 1
+        if forward_cost < dist.get((nx, ny, d), float('inf')):
+            dist[(nx, ny, d)] = forward_cost
+            heapq.heappush(pq, (forward_cost, nx, ny, d))
 
-# Whether a position is at a junction
-def isjunction(pos):
-    if not ispath(pos):
-        # Walls are not junctions
-        return False
-    if get(pos) in {"S", "E"}:
-        # Always include start and end as junctions
-        return True
-    hor = sum(1 for dir in dirhor if ispath(posdir(pos, dir))) # Number of horizontal paths from pos
-    ver = sum(1 for dir in dirver if ispath(posdir(pos, dir))) # Number of vertical paths from pos
-    if hor == 0 or ver == 0:
-        # 0,0 isolated cell (walls all round)
-        # 0,1 deadend
-        # 0,2 straightline
-        return False
-    # In which case it's one of:
-    # 1,1 corner
-    # 1,2 tjunction
-    # 2,2 crossroads
-    # Which are all counted as junctions:
-    return True
+    # Rotate left
+    ld = (d - 1) % 4
+    left_cost = cost + 1000
+    if left_cost < dist.get((x, y, ld), float('inf')):
+        dist[(x, y, ld)] = left_cost
+        heapq.heappush(pq, (left_cost, x, y, ld))
 
-junctions = set(pos for pos in grid.keys() if isjunction(pos))
-print("junctions")
-print(junctions)
+    # Rotate right
+    rd = (d + 1) % 4
+    right_cost = cost + 1000
+    if right_cost < dist.get((x, y, rd), float('inf')):
+        dist[(x, y, rd)] = right_cost
+        heapq.heappush(pq, (right_cost, x, y, rd))
 
-links = {}
+# Print the minimal cost
+print(f"Part A: {min_cost}")
 
-def connect(a,b,dist):
-    if a not in links:
-        links[a] = {(b,dist)}
-    else:
-        links[a].add((b,dist))
+# Now for Part B:
+# Backtrack from end_states to find all states that lead to these minimal paths
+on_best_path = set()  # store (x,y) positions on best paths
+visited_states = set()
+stack = end_states[:]
 
-# def doubleconnect(a,b,dist):
-#     connect(a,b,dist)
-    # connect(b,a,dist)
+while stack:
+    x, y, d = stack.pop()
+    if (x, y, d) in visited_states:
+        continue
+    visited_states.add((x, y, d))
+    on_best_path.add((x, y))
 
-for a in junctions:
-    for b in junctions:
-        ax, bx = a[0], b[0]
-        ay, by = a[1], b[1]
-        xd, yd = abs(ax-bx), abs(ay-by)
-        if xd == 0 and all(ispath((ax,y)) for y in range(min(ay,by), max(ay,by)+1)):
-            connect(a,b,yd)
-        elif yd == 0 and all(ispath((x,ay)) for x in range(min(ax,bx), max(ax,bx)+1)):
-            connect(a,b,xd)
-print("links")
-for link in links.items():
-    print(link)
-    print("- - - - - - -")
+    current_cost = dist[(x, y, d)]
 
-import time
-parta_time = time.time()  # Record the current time
+    # Check forward predecessor
+    # If we came here by moving forward, we had:
+    # predecessor: (px, py, d) with dist = current_cost - 1
+    px = x - directions[d][0]
+    py = y - directions[d][1]
+    if (px, py, d) in dist and dist[(px, py, d)] == current_cost - 1:
+        stack.append((px, py, d))
 
-# From pos pointing in dir, find the minimum score to get to end using the remaining junctions
-def score(pos, dir, junctions):
-    global parta_time
-    # Print only if 1 second has passed
-    if time.time() - parta_time >= 1:
-        print(len(junctions))
-        parta_time = time.time()  # Reset the timer
-        
-    # print(">>>", pos, dir)
-    minscore = big
-    if pos == end:
-        # We've got to the end so return zero score
-        return 0
-    nextlinks = links[pos]
-    if len(nextlinks) == 0:
-        # We've got to a dead end so return a big number
-        return big
-    # Otherwise we can explore the possible directions:
-    for (linkpos, linkdist) in nextlinks:
-        # If we are pointing in a vertical direction
-        if dir in dirver:
-            # We need to now move horizontally so we need a horizontal link:
-            if ax == bx:
-                if linkpos in junctions:
-                    newpos = linkpos
-                    newdir = (0, compare(linkpos, pos))
-                    newjunctions = junctions.copy()
-                    newjunctions.remove(pos)
-                    newscore = score(newpos, newdir, newjunctions) + linkdist + 1000
-                    minscore = min(minscore, newscore)
-        elif dir in dirhor:
-            # We need to now move vertically so we need a vertical link:
-            if ay == by:
-                if linkpos in junctions:
-                    newpos = linkpos
-                    newdir = (compare(linkpos, pos), 0)
-                    newjunctions = junctions.copy()
-                    newjunctions.remove(pos)
-                    newscore = score(newpos, newdir, newjunctions) + linkdist + 1000
-                    minscore = min(minscore, newscore)
-    return minscore
+    # Check rotation predecessors:
+    # Rotating left: came from direction (d+1) mod 4 with cost = current_cost - 1000
+    ld = (d + 1) % 4
+    if (x, y, ld) in dist and dist[(x, y, ld)] == current_cost - 1000:
+        stack.append((x, y, ld))
 
-parta = score(start, (1,0), junctions)
-print("Part A:", parta)
-parta, partb = 0, 0
-print("Part B:", partb)
+    # Rotating right: came from direction (d-1) mod 4 with cost = current_cost - 1000
+    rd = (d - 1) % 4
+    if (x, y, rd) in dist and dist[(x, y, rd)] == current_cost - 1000:
+        stack.append((x, y, rd))
 
-end_time = time.time()
-execution_time = end_time - start_time
-print(f"Execution time: {execution_time} seconds")
+# Count how many on_best_path tiles are not walls
+count = 0
+for (xx, yy) in on_best_path:
+    if grid.get((xx, yy), '#') != '#':
+        count += 1
+
+# Print the count of tiles on at least one best path
+print(f"Part B: {count}")
